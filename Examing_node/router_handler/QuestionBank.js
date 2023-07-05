@@ -2,7 +2,11 @@
 const db = require('../db/index')
     // 导入全局的配置文件
 const config = require('../config')
-
+const formidable = require('formidable');
+var xlsx = require('node-xlsx');
+const fs = require('fs')
+const readXlsxFile = require("read-excel-file/node");
+const excel = require("exceljs");
 // 上传题库信息的处理函数
 exports.upload_QuestionBank = (req, res) => {
     const info = req.body
@@ -146,4 +150,36 @@ exports.update_Question = (req, res) => {
         }
         res.cc('题目信息修改成功！', 0)
     })
+}
+
+exports.upload_Question_excel = (req, res) => {
+    const QBId = req.body.QBId
+    path = "./public/uploads/" + QBId + ".xlsx"
+    readXlsxFile(path).then((rows) => {
+        // skip header
+        rows.shift();
+        let excelData = [];
+        rows.forEach((row) => {
+            let info = {
+                Stem: row[0],
+                A: row[1],
+                B: row[2],
+                C: row[3],
+                D: row[4],
+                Type: row[5],
+                Answer: row[6],
+                Difficulty: row[7],
+            };
+            const sqlStr = 'insert into question(QBId,UId,Stem,A,B,C,D,Type,Answer,Difficulty) values(?,?,?,?,?,?,?,?,?,?)'
+            db.query(sqlStr, [QBId, req.user.UId, info.Stem, info.A, info.B, info.C, info.D, info.Type, info.Answer, info.Difficulty], (err, results) => {
+                // 执行 SQL 语句失败
+                if (err) {
+                    return res.cc(err)
+                }
+            })
+            excelData.push(info);
+            //console.log(excelData)
+        });
+    })
+    res.cc('题目导入成功！', 0)
 }

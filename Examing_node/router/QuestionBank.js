@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const upload = require('../upload')
 
 // 导入经理路由处理函数对应的模块
 const QuestionBank_handler = require('../router_handler/QuestionBank')
@@ -27,4 +28,7 @@ router.delete('/question', QuestionBank_handler.delete_Question)
 
 //修改题目信息
 router.put('/question', QuestionBank_handler.update_Question)
+
+//通过excel快速上传题目
+router.post('/question/excel', upload.single('file'), QuestionBank_handler.upload_Question_excel)
 module.exports = router
