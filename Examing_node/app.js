@@ -41,6 +41,9 @@ app.use('/user', userRouter)
 const QuestionBankRouter = require('./router/QuestionBank')
 app.use('/question_bank', QuestionBankRouter)
 
+const paperRouter = require('./router/paper')
+app.use('/paper', paperRouter)
+
 const managerRouter = require('./router/manager')
 app.use('/manager', managerRouter)
     // 定义错误级别的中间件

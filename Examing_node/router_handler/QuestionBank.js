@@ -74,3 +74,76 @@ exports.update_QuestionBank = (req, res) => {
         res.cc('题库信息修改成功！', 0)
     })
 }
+
+
+// 上传单个题目信息的处理函数
+exports.upload_Question = (req, res) => {
+    const info = req.body
+        // 定义 SQL 语句，插入员工信息
+    const sqlStr = 'insert into question(QBId,UId,Stem,A,B,C,D,Type,Answer,Difficulty) values(?,?,?,?,?,?,?,?,?,?)'
+    db.query(sqlStr, [info.QBId, req.user.UId, info.Stem, info.A, info.B, info.C, info.D, info.Type, info.Answer, info.Difficulty], (err, results) => {
+        // 执行 SQL 语句失败
+        if (err) {
+            return res.cc(err)
+        }
+        res.cc('题目添加成功！', 0)
+    })
+}
+
+//获取单个题库中的题目信息的处理函数
+exports.get_Question = (req, res) => {
+    page = req.query.page || 0;
+    size = req.query.size || 1000;
+    db.getConnection((err, conn) => {
+        if (err) {
+            console.log(err)
+        } else {
+            const sql = 'select * from question where QBId=? limit ' + page + ',' + size;
+            conn.query(sql, req.query.QBId, (err, result) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    res.json(result)
+                    conn.release();
+                }
+            })
+        }
+    })
+}
+
+//删除单个题目信息的处理函数
+exports.delete_Question = (req, res) => {
+    QId = req.query.QId;
+    db.getConnection((err, conn) => {
+        if (err) {
+            console.log(err)
+        } else {
+            const sql = 'delete from question where QId=?';
+            conn.query(sql, [QId], (err, result) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    if (result.affectedRows == 0) {
+                        res.cc("不存在该题目", 1);
+                    } else {
+                        res.cc("删除成功", 0);
+                    }
+                    conn.release();
+                }
+            })
+        }
+    })
+}
+
+//更新单个题目信息的处理函数
+exports.update_Question = (req, res) => {
+    const info = req.query
+    const sqlStr = 'update question set QBId=?,UId=?,Stem=?,A=?,B=?,C=?,D=?,Type=?,Answer=?,Difficulty=? where QId=?'
+    db.query(sqlStr, [info.QBId, req.user.UId, info.Stem, info.A, info.B, info.C, info.D, info.Type, info.Answer, info.Difficulty, info.QId], (err, results) => {
+        // 执行 SQL 语句失败
+        if (err) {
+            return res.cc(err)
+        }
+        res.cc('题目信息修改成功！', 0)
+    })
+}
