@@ -78,8 +78,26 @@ exports.update_paper = (req, res) => {
 
 exports.choose_question = (req, res) => {
     const info = req.body
+    const PId = info.PId
+    const QId = info.QId
+    console.log(info)
+    for (i = 0; i < QId.length; i++) {
+        const sqlStr = 'insert into qp(QId,PId) values(?,?)'
+        db.query(sqlStr, [QId[i], PId], (err, results) => {
+            // 执行 SQL 语句失败
+            if (err) {
+                return res.cc(err)
+            }
+        })
+    }
+    return res.cc('题目添加成功！', 0)
+}
+
+exports.auto_question = (req, res) => {
+    const info = req.body
+    const choice = info.choice
         // 定义 SQL 语句，插入员工信息
-    const sqlStr = 'insert into paper(PName,PInformation,UId) values(?,?,?)'
+    const sqlStr = 'insert into qp(QId,PId) values(?,?)'
     db.query(sqlStr, [info.PName, info.PInformation, req.user.UId], (err, results) => {
         // 执行 SQL 语句失败
         if (err) {
@@ -87,4 +105,40 @@ exports.choose_question = (req, res) => {
         }
         res.cc('试卷添加成功！', 0)
     })
+}
+
+exports.get_paper_question = (req, res) => {
+    page = req.query.page || 0;
+    size = req.query.size || 1000;
+    db.getConnection((err, conn) => {
+        if (err) {
+            console.log(err)
+        } else {
+            const sql = 'select * from question where QId in (select QId from paper where PId=?) ';
+            conn.query(sql, [req.query.PId], (err, result) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    res.json(result)
+                    conn.release();
+                }
+            })
+        }
+    })
+}
+
+exports.delete_paper_question = (req, res) => {
+    const info = req.body
+    const PId = info.PId
+    const QId = info.QId
+    for (i = 0; i < QId.length; i++) {
+        const sqlStr = 'delete from qp where QId=? and PId=?';
+        db.query(sqlStr, [QId[i], PId], (err, results) => {
+            // 执行 SQL 语句失败
+            if (err) {
+                return res.cc(err)
+            }
+        })
+    }
+    return res.cc('题目删除成功！', 0)
 }
